@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIVITAS — DSU Modul Operațional</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --accent: #f78166;
+  --accent2: #79c0ff;
+  --green: #3fb950;
+  --yellow: #e3b341;
+  --red: #f85149;
+  --purple: #bc8cff;
+  --orange: #f0883e;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* NAV */
+nav {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border2);
+  padding: 0; height: 52px; position: sticky; top: 0; z-index: 100;
+}
+.nav-logo {
+  padding: 0 20px; height: 100%; display: flex; align-items: center;
+  border-right: 1px solid var(--border2); gap: 10px;
+}
+.logo-mark {
+  width: 28px; height: 28px; background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: #0d1117; letter-spacing: 0;
+}
+.logo-text { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 2px; }
+.logo-sub { font-size: 10px; color: var(--text2); letter-spacing: 1px; }
+
+.nav-tabs { display: flex; height: 100%; }
+.nav-tab {
+  padding: 0 20px; height: 100%; display: flex; align-items: center;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.5px;
+  cursor: pointer; border-right: 1px solid var(--border);
+  color: var(--text2); transition: all 0.15s; border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.nav-tab:hover { color: var(--text); background: var(--bg3); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: transparent; }
+
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; padding: 0 20px; }
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px; color: var(--green);
+  background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3);
+  padding: 3px 10px; border-radius: 2px;
+}
+.pulse { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.event-badge {
+  font-family: var(--mono); font-size: 10px;
+  background: rgba(247,129,102,0.15); border: 1px solid rgba(247,129,102,0.4);
+  color: var(--accent); padding: 3px 10px; border-radius: 2px;
+  display: flex; align-items: center; gap: 6px;
+}
+.event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ═══════════════════════════════════
+   SCREEN 1: COMANDANT POA
+═══════════════════════════════════ */
+#screen-poa {
+  display: none;
+  min-height: calc(100vh - 52px);
+  background: #f8f9fa;
+  color: #1a1a2e;
+  font-family: var(--sans);
+}
+#screen-poa.active { display: block; }
+
+.poa-header {
+  background: #1a1a2e; color: white;
+  padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.poa-title { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+.poa-subtitle { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; font-family: var(--mono); }
+.poa-incident {
+  background: rgba(248,81,73,0.2); border: 1px solid rgba(248,81,73,0.5);
+  padding: 8px 14px; border-radius: 4px; text-align: right;
+}
+.poa-incident-label { font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+.poa-incident-type { font-size: 13px; font-weight: 600; color: #f85149; }
+.poa-incident-loc { font-size: 10px; color: rgba(255,255,255,0.6); font-family: var(--mono); }
+
+/* Stepper */
+.stepper {
+  display: flex; gap: 0; background: white;
+  border-bottom: 2px solid #e9ecef;
+  padding: 0 24px;
+}
+.step {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 20px 14px 0; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  background: #e9ecef; color: #6c757d;
+  transition: all 0.2s;
+}
+.step-label { font-size: 12px; font-weight: 500; color: #6c757d; transition: all 0.2s; }
+.step.active .step-num { background: #1a1a2e; color: white; }
+.step.active .step-label { color: #1a1a2e; }
+.step.active { border-bottom-color: #1a1a2e; }
+.step.done .step-num { background: #3fb950; color: white; }
+.step.done .step-label { color: #3fb950; }
+.step-arrow { color: #dee2e6; margin-right: 20px; }
+
+.poa-content { padding: 24px; max-width: 900px; margin: 0 auto; }
+
+/* STEP 1: Localizare */
+.form-section { background: white; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 16px; overflow: hidden; }
+.form-section-header {
+  padding: 14px 20px; background: #f8f9fa; border-bottom: 1px solid #e9ecef;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: #495057;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.form-body { padding: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11px; font-weight: 600; color: #495057; letter-spacing: 0.3px; }
+.form-input, .form-select {
+  border: 1.5px solid #dee2e6; border-radius: 6px;
+  padding: 10px 12px; font-size: 13px; font-family: var(--mono);
+  background: white; color: #1a1a2e; transition: border-color 0.15s;
+  outline: none;
+}
+.form-input:focus, .form-select:focus { border-color: #1a1a2e; }
+.form-input.filled { background: #f0fff4; border-color: #3fb950; }
+.gps-row { display: flex; gap: 8px; }
+.gps-btn {
+  padding: 10px 14px; background: #1a1a2e; color: white;
+  border: none; border-radius: 6px; font-size: 11px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; letter-spacing: 0.5px;
+}
+.radius-row { display: flex; align-items: center; gap: 12px; }
+.radius-slider { flex: 1; accent-color: #1a1a2e; }
+.radius-val { font-family: var(--mono); font-size: 13px; font-weight: 600; min-width: 50px; }
+
+/* Harta mini */
+.mini-map {
+  height: 160px; background: #e8f4f8; border-radius: 6px; position: relative;
+  overflow: hidden; border: 1px solid #dee2e6;
+}
+.map-bg {
+  position: absolute; inset: 0;
+  background: 
+    repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(0,0,0,0.03) 30px, rgba(0,0,0,0.03) 31px),
+    repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,0,0,0.03) 30px, rgba(0,0,0,0.03) 31px),
+    linear-gradient(135deg, #c8e6c9 0%, #bbdefb 40%, #e1f5fe 70%, #f0f4c3 100%);
+}
+.map-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 3; }
+.map-pin-dot { width: 14px; height: 14px; background: #f85149; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(248,81,73,0.5); }
+.map-radius-ring {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  border-radius: 50%; border: 2px dashed rgba(26,26,46,0.4);
+  transition: all 0.3s; z-index: 2;
+}
+.map-label { position: absolute; bottom: 8px; left: 8px; font-size: 10px; color: #495057; font-family: var(--mono); background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 3px; }
+
+/* Org mini markers */
+.org-marker {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid white; transform: translate(-50%,-50%);
+  cursor: pointer; transition: transform 0.15s;
+  z-index: 4;
+}
+.org-marker:hover { transform: translate(-50%,-50%) scale(1.5); }
+.org-marker.l0 { background: #3fb950; }
+.org-marker.l1 { background: #e3b341; }
+
+/* STEP 2: Capabilități */
+.cap-search {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.cap-search-input {
+  flex: 1; border: 1.5px solid #dee2e6; border-radius: 6px;
+  padding: 10px 14px; font-size: 13px; outline: none;
+  transition: border-color 0.15s;
+}
+.cap-search-input:focus { border-color: #1a1a2e; }
+
+.cap-categories { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.cap-cat {
+  padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  cursor: pointer; border: 1.5px solid #dee2e6; color: #6c757d;
+  transition: all 0.15s;
+}
+.cap-cat.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cap-card {
+  border: 1.5px solid #dee2e6; border-radius: 8px; padding: 12px 14px;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px;
+}
+.cap-card:hover { border-color: #1a1a2e; background: #f8f9fa; }
+.cap-card.selected { border-color: #1a1a2e; background: #f0f4ff; }
+.cap-icon { font-size: 20px; }
+.cap-name { font-size: 12px; font-weight: 600; color: #1a1a2e; }
+.cap-sub { font-size: 10px; color: #6c757d; margin-top: 1px; }
+.cap-check { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #dee2e6; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.cap-card.selected .cap-check { background: #1a1a2e; border-color: #1a1a2e; color: white; }
+
+.selected-caps { margin-top: 16px; }
+.selected-cap-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: #f0f4ff; border: 1px solid #c7d7ff; border-radius: 6px; margin-bottom: 8px;
+}
+.cap-qty { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.qty-btn {
+  width: 24px; height: 24px; border-radius: 50%; border: 1px solid #dee2e6;
+  background: white; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.qty-val { font-family: var(--mono); font-weight: 600; font-size: 14px; min-width: 24px; text-align: center; }
+.urgency-sel {
+  padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  border: 1px solid; cursor: pointer;
+}
+.urgency-immediate { background: rgba(248,81,73,0.1); border-color: rgba(248,81,73,0.5); color: #f85149; }
+.urgency-1h { background: rgba(227,179,65,0.1); border-color: rgba(227,179,65,0.5); color: #e3b341; }
+
+/* STEP 3: Confirmare */
+.confirm-summary {
+  background: #1a1a2e; color: white; border-radius: 8px; padding: 20px; margin-bottom: 16px;
+}
+.confirm-title { font-size: 11px; letter-spacing: 1px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+.confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.confirm-row:last-child { border: none; }
+.confirm-key { font-size: 11px; color: rgba(255,255,255,0.5); }
+.confirm-val { font-size: 13px; font-weight: 500; font-family: var(--mono); }
+
+.layers-preview { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.layer-card {
+  background: white; border: 1.5px solid #dee2e6; border-radius: 8px; padding: 14px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
+}
+.layer-card.l0 { border-color: #3fb950; background: #f0fff4; }
+.layer-num { font-size: 10px; font-weight: 600; letter-spacing: 1px; color: #6c757d; margin-bottom: 6px; }
+.layer-count { font-size: 28px; font-weight: 300; font-family: var(--mono); }
+.layer-count.l0 { color: #3fb950; }
+.layer-count.l1 { color: #e3b341; }
+.layer-count.l2 { color: #6c757d; }
+.layer-desc { font-size: 10px; color: #6c757d; margin-top: 4px; }
+.layer-timeout { display: flex; align-items: center; gap: 6px; margin-top: 10px; justify-content: center; }
+.timeout-input { width: 45px; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 6px; font-family: var(--mono); font-size: 12px; text-align: center; }
+
+.submit-btn {
+  width: 100%; padding: 16px; background: #f85149; color: white;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
+  letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+  font-family: var(--sans);
+}
+.submit-btn:hover { background: #da3633; transform: translateY(-1px); }
+.submit-btn:active { transform: translateY(0); }
+.submit-note { text-align: center; font-size: 10px; color: #adb5bd; margin-top: 8px; }
+
+/* Step footer */
+.step-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+.btn-next {
+  padding: 11px 24px; background: #1a1a2e; color: white;
+  border: none; border-radius: 6px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+}
+.btn-next:hover { background: #2d2d4e; }
+.btn-back {
+  padding: 11px 24px; background: transparent; color: #6c757d;
+  border: 1.5px solid #dee2e6; border-radius: 6px; font-size: 13px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-back:hover { border-color: #1a1a2e; color: #1a1a2e; }
+
+/* ═══════════════════════════════════
+   SCREEN 2: DASHBOARD
+═══════════════════════════════════ */
+#screen-dash {
+  display: none;
+  min-height: calc(100vh - 52px);
+  background: var(--bg);
+  padding: 20px;
+  gap: 16px;
+}
+#screen-dash.active { display: grid; grid-template-columns: 1fr 320px; grid-template-rows: auto auto 1fr; }
+
+/* Dashboard top bar */
+.dash-topbar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 12px;
+}
+.event-card {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.event-card:hover { border-color: var(--accent); }
+.event-card.active-ev { border-color: var(--red); }
+.ev-type { font-size: 10px; font-weight: 600; letter-spacing: 1px; color: var(--text2); }
+.ev-name { font-size: 13px; font-weight: 500; margin-top: 2px; }
+.ev-loc { font-size: 10px; color: var(--text2); font-family: var(--mono); }
+.ev-status {
+  padding: 3px 8px; border-radius: 2px; font-size: 10px; font-weight: 600;
+  font-family: var(--mono); letter-spacing: 0.5px;
+}
+.ev-status.active-s { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+.ev-status.ok-s { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+
+.dash-scope {
+  margin-left: auto; display: flex; gap: 6px; align-items: center;
+}
+.scope-btn {
+  padding: 5px 12px; border-radius: 3px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.5px; cursor: pointer; border: 1px solid var(--border2);
+  color: var(--text2); background: transparent; font-family: var(--mono);
+  transition: all 0.15s;
+}
+.scope-btn.active { background: var(--accent2); color: var(--bg); border-color: var(--accent2); }
+.scope-btn:hover:not(.active) { border-color: var(--text2); color: var(--text); }
+
+/* KPI row */
+.kpi-row {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+}
+.kpi {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 14px 16px;
+}
+.kpi-label { font-size: 9px; font-weight: 600; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; }
+.kpi-val { font-family: var(--mono); font-size: 26px; font-weight: 300; margin: 4px 0 2px; }
+.kpi-sub { font-size: 10px; color: var(--text2); }
+.kpi-val.green { color: var(--green); }
+.kpi-val.yellow { color: var(--yellow); }
+.kpi-val.red { color: var(--red); }
+.kpi-val.blue { color: var(--accent2); }
+.kpi-val.orange { color: var(--orange); }
+
+/* Main content area */
+.dash-main {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.dash-map-container {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; flex: 1; min-height: 300px; position: relative;
+}
+.dash-map-header {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1px; color: var(--text2);
+}
+.dash-map-body {
+  position: relative; height: 280px;
+  background: 
+    repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px),
+    repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px),
+    linear-gradient(135deg, #0d1a0d 0%, #0a1520 40%, #0d1117 100%);
+}
+.map-ring {
+  position: absolute; border-radius: 50%; border: 1px dashed;
+  transform: translate(-50%,-50%); pointer-events: none;
+}
+.ring-l0 { border-color: rgba(63,185,80,0.4); }
+.ring-l1 { border-color: rgba(227,179,65,0.3); }
+.ring-l2 { border-color: rgba(139,148,158,0.2); }
+.map-event-pin {
+  position: absolute; transform: translate(-50%,-50%); z-index: 5;
+}
+.pin-core { width: 12px; height: 12px; background: var(--red); border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+.pin-ring { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(248,81,73,0.4); position: absolute; top: -8px; left: -8px; animation: expand 2s infinite; }
+@keyframes expand { 0%{transform:scale(0.8);opacity:0.8} 100%{transform:scale(1.3);opacity:0} }
+.map-org-dot {
+  position: absolute; width: 9px; height: 9px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.6); transform: translate(-50%,-50%);
+  cursor: pointer; z-index: 4; transition: transform 0.15s;
+}
+.map-org-dot:hover { transform: translate(-50%,-50%) scale(1.8); z-index: 10; }
+.map-org-dot.confirmed { background: var(--green); }
+.map-org-dot.pending { background: var(--yellow); }
+.map-org-dot.declined { background: var(--red); }
+.map-org-dot.transit { background: var(--accent2); }
+.map-legend {
+  position: absolute; bottom: 10px; left: 10px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--text2); font-family: var(--mono); }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* Org progress table */
+.dash-orgs {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden;
+}
+.dash-table-header {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1px; color: var(--text2);
+}
+.org-table { width: 100%; }
+.org-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border);
+  font-size: 11px; align-items: center;
+  transition: background 0.1s;
+}
+.org-row:hover { background: var(--bg3); }
+.org-row-header { color: var(--text3); font-size: 9px; letter-spacing: 0.5px; font-weight: 600; }
+.org-name { font-weight: 500; }
+.org-dist { font-family: var(--mono); color: var(--text2); }
+.org-cap { color: var(--text2); font-size: 10px; }
+.org-eta { font-family: var(--mono); }
+.org-status-badge {
+  padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 600;
+  font-family: var(--mono); letter-spacing: 0.3px; text-align: center;
+}
+.st-confirmed { background: rgba(63,185,80,0.15); color: var(--green); }
+.st-pending { background: rgba(227,179,65,0.15); color: var(--yellow); }
+.st-transit { background: rgba(121,192,255,0.15); color: var(--accent2); }
+.st-declined { background: rgba(248,81,73,0.15); color: var(--red); }
+.st-arrived { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+/* Sidebar */
+.dash-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.sidebar-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden;
+}
+.sidebar-header {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight: 600; letter-spacing: 1px; color: var(--text2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* Escaladare / Countdown */
+.escalade-panel { padding: 16px; }
+.layer-status { margin-bottom: 12px; }
+.ls-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ls-name { font-size: 11px; font-weight: 600; }
+.ls-state { font-size: 9px; font-family: var(--mono); padding: 2px 6px; border-radius: 2px; }
+.ls-active { background: rgba(63,185,80,0.15); color: var(--green); }
+.ls-wait { background: rgba(227,179,65,0.15); color: var(--yellow); }
+.ls-standby { background: rgba(139,148,158,0.1); color: var(--text3); }
+.ls-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.ls-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.ls-stats { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--text2); font-family: var(--mono); }
+
+.countdown-display {
+  background: var(--bg3); border-radius: 6px; padding: 12px;
+  text-align: center; margin-bottom: 12px; border: 1px solid var(--border2);
+}
+.countdown-label { font-size: 9px; color: var(--text2); letter-spacing: 1px; margin-bottom: 4px; }
+.countdown-val { font-family: var(--mono); font-size: 32px; font-weight: 300; color: var(--yellow); }
+.countdown-sub { font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+.escalade-btns { display: flex; gap: 8px; }
+.esc-btn {
+  flex: 1; padding: 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  border: none; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s;
+}
+.esc-btn-now { background: var(--accent); color: white; }
+.esc-btn-now:hover { background: #e06550; }
+.esc-btn-cancel { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+
+/* Cap coverage */
+.cap-coverage { padding: 14px; }
+.cap-cov-item { margin-bottom: 10px; }
+.cap-cov-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.cap-cov-name { font-size: 11px; font-weight: 500; }
+.cap-cov-val { font-family: var(--mono); font-size: 10px; color: var(--text2); }
+.cov-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.cov-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.cov-green { background: var(--green); }
+.cov-yellow { background: var(--yellow); }
+.cov-red { background: var(--red); }
+
+/* Timeline */
+.timeline { padding: 10px 14px; max-height: 200px; overflow-y: auto; }
+.tl-item { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.tl-item:last-child { border: none; }
+.tl-time { font-family: var(--mono); font-size: 9px; color: var(--text3); min-width: 42px; }
+.tl-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.tl-text { font-size: 10px; color: var(--text2); line-height: 1.4; }
+
+/* SCREEN 3: ACTIVE CERERE (post-submit) */
+#screen-active { display: none; }
+#screen-active.active {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  min-height: calc(100vh - 52px);
+  background: var(--bg);
+}
+.active-main { padding: 20px; }
+.active-sidebar { padding: 20px; border-left: 1px solid var(--border); }
+
+.active-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.active-badge {
+  background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.4);
+  color: var(--red); padding: 4px 10px; border-radius: 3px;
+  font-size: 10px; font-weight: 600; font-family: var(--mono); letter-spacing: 1px;
+}
+.active-title { font-size: 16px; font-weight: 500; }
+.active-sub { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+
+/* Animations */
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.poa-content > * { animation: slideIn 0.25s ease; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--bg2); border: 1px solid var(--green); border-radius: 6px;
+  padding: 12px 18px; font-size: 12px; color: var(--green);
+  display: none; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: slideIn 0.2s ease;
+}
+.toast.show { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-mark">CIV</div>
+    <div>
+      <div class="logo-text">CIVITAS</div>
+      <div class="logo-sub">DSU · MODUL OPERAȚIONAL</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showScreen('dash')">DASHBOARD</div>
+    <div class="nav-tab" onclick="showScreen('poa')">CERERE NOUĂ</div>
+    <div class="nav-tab" onclick="showScreen('active')">CERERE ACTIVĂ <span style="margin-left:6px;background:var(--red);color:white;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700">1</span></div>
+  </div>
+  <div class="nav-right">
+    <div class="event-badge"><div class="event-dot"></div>1 EVENIMENT ACTIV</div>
+    <div class="status-pill"><div class="pulse"></div>LIVE</div>
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">CDT. IONESCU M.</div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Cerere trimisă — 7 organizații notificate în Layer 0</div>
+
+<!-- ════════════════════════════════
+  SCREEN: DASHBOARD
+════════════════════════════════ -->
+<div id="screen-dash" class="screen active">
+  <div class="dash-topbar">
+    <div class="event-card active-ev">
+      <div>
+        <div class="ev-type">INUNDAȚII</div>
+        <div class="ev-name">Inundații Banat — Timiș</div>
+        <div class="ev-loc">45.7489° N, 21.2087° E · Raza: 45 km</div>
+      </div>
+      <div class="ev-status active-s">ACTIV</div>
+    </div>
+    <div class="event-card">
+      <div>
+        <div class="ev-type">INCENDIU VEG.</div>
+        <div class="ev-name">Incendiu pădure Caraș</div>
+        <div class="ev-loc">45.2923° N, 21.8897° E · Raza: 20 km</div>
+      </div>
+      <div class="ev-status ok-s">CONȚINUT</div>
+    </div>
+    <div class="dash-scope">
+      <div class="scope-btn" onclick="setScope(this,'POA')">POA</div>
+      <div class="scope-btn active" onclick="setScope(this,'CJCCI')">CJCCI</div>
+      <div class="scope-btn" onclick="setScope(this,'CNCCI')">CNCCI</div>
+      <div class="scope-btn" onclick="setScope(this,'DSU')">DSU</div>
+      <div class="scope-btn" onclick="setScope(this,'PUBLIC')">PUBLIC</div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Org. notificate</div><div class="kpi-val blue">18</div><div class="kpi-sub">Layer 0 + 1</div></div>
+    <div class="kpi"><div class="kpi-label">Au confirmat</div><div class="kpi-val green">7</div><div class="kpi-sub">38.8% din total</div></div>
+    <div class="kpi"><div class="kpi-label">În drum</div><div class="kpi-val" style="color:var(--accent2)">3</div><div class="kpi-sub">ETA mediu: 22 min</div></div>
+    <div class="kpi"><div class="kpi-label">Au sosit</div><div class="kpi-val" style="color:var(--purple)">2</div><div class="kpi-sub">Activi pe teren</div></div>
+    <div class="kpi"><div class="kpi-label">Fără răspuns</div><div class="kpi-val yellow">6</div><div class="kpi-sub">Escaladare: 4:12</div></div>
+    <div class="kpi"><div class="kpi-label">Acoperire cerere</div><div class="kpi-val green">74%</div><div class="kpi-sub">↑ din 55% Layer 0</div></div>
+  </div>
+
+  <div class="dash-main">
+    <div class="dash-map-container">
+      <div class="dash-map-header">
+        <div class="pulse" style="background:var(--red)"></div>
+        HARTĂ INTERVENȚIE — TIMIȘ / CARAȘ-SEVERIN
+        <span style="margin-left:auto;font-size:9px">actualizat acum 1s</span>
+      </div>
+      <div class="dash-map-body" id="dashMap">
+        <!-- Rings -->
+        <div class="map-ring ring-l0" id="ring0" style="width:200px;height:200px;top:55%;left:45%"></div>
+        <div class="map-ring ring-l1" id="ring1" style="width:320px;height:320px;top:55%;left:45%"></div>
+        <div class="map-ring ring-l2" id="ring2" style="width:460px;height:460px;top:55%;left:45%"></div>
+        <!-- Event pin -->
+        <div class="map-event-pin" style="top:55%;left:45%">
+          <div class="pin-ring"></div>
+          <div class="pin-core"></div>
+        </div>
+        <!-- Orgs -->
+        <div class="map-org-dot confirmed" style="top:44%;left:38%" title="Crucea Roșie Timiș · CONFIRMAT"></div>
+        <div class="map-org-dot confirmed" style="top:60%;left:52%" title="SMURD Timiș · CONFIRMAT"></div>
+        <div class="map-org-dot transit" style="top:50%;left:58%" title="Salvaspeo Romania · ÎN DRUM · ETA 18min"></div>
+        <div class="map-org-dot confirmed" style="top:66%;left:40%" title="Rotary Club TM · CONFIRMAT"></div>
+        <div class="map-org-dot pending" style="top:40%;left:55%" title="Asociația Caraș Verde · FĂRĂ RĂSPUNS"></div>
+        <div class="map-org-dot pending" style="top:70%;left:60%" title="Protect&Rescue · FĂRĂ RĂSPUNS"></div>
+        <div class="map-org-dot confirmed" style="top:48%;left:32%" title="Lions Club Romania · CONFIRMAT"></div>
+        <div class="map-org-dot transit" style="top:74%;left:48%" title="Mountain Rescue · ÎN DRUM · ETA 31min"></div>
+        <div class="map-org-dot declined" style="top:38%;left:48%" title="Voluntariat Sibiu · INDISPONIBIL"></div>
+        <div class="map-org-dot confirmed" style="top:62%;left:28%" title="ProVita Lugoj · CONFIRMAT"></div>
+        <div class="map-org-dot pending" style="top:80%;left:36%" title="ANCAAR Timiș · FĂRĂ RĂSPUNS"></div>
+        <!-- Timișoara label -->
+        <div style="position:absolute;top:46%;left:43%;font-size:9px;color:rgba(255,255,255,0.3);font-family:var(--mono);pointer-events:none">TIMIȘOARA</div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>CONFIRMAT</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>FĂRĂ RĂSPUNS</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>ÎN DRUM</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>INDISPONIBIL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-orgs">
+      <div class="dash-table-header">
+        <div class="pulse" style="background:var(--accent2)"></div>
+        STATUS ORGANIZAȚII — CERERE #CR-2024-0847
+      </div>
+      <div class="org-table">
+        <div class="org-row org-row-header">
+          <div>Organizație</div><div>Distanță</div><div>Capabilitate</div><div>ETA</div><div>Status</div>
+        </div>
+        <div class="org-row"><div class="org-name">Crucea Roșie Timiș</div><div class="org-dist">12 km</div><div class="org-cap">Ambulanță tip B × 2</div><div class="org-eta" style="color:var(--purple)">SOSIT</div><div><span class="org-status-badge st-arrived">ACTIV</span></div></div>
+        <div class="org-row"><div class="org-name">SMURD Timiș</div><div class="org-dist">8 km</div><div class="org-cap">Autoutilitare × 3</div><div class="org-eta" style="color:var(--purple)">SOSIT</div><div><span class="org-status-badge st-arrived">ACTIV</span></div></div>
+        <div class="org-row"><div class="org-name">Salvaspeo Romania</div><div class="org-dist">19 km</div><div class="org-cap">Bărci pneumatice × 4</div><div class="org-eta" style="color:var(--accent2)">18 min</div><div><span class="org-status-badge st-transit">ÎN DRUM</span></div></div>
+        <div class="org-row"><div class="org-name">Mountain Rescue TM</div><div class="org-dist">28 km</div><div class="org-cap">Grupuri pompare × 2</div><div class="org-eta" style="color:var(--accent2)">31 min</div><div><span class="org-status-badge st-transit">ÎN DRUM</span></div></div>
+        <div class="org-row"><div class="org-name">Lions Club Romania</div><div class="org-dist">15 km</div><div class="org-cap">Motopompe × 6</div><div class="org-eta">45 min</div><div><span class="org-status-badge st-confirmed">CONFIRMAT</span></div></div>
+        <div class="org-row"><div class="org-name">Rotary Club TM</div><div class="org-dist">11 km</div><div class="org-cap">Tabără mobilă × 1</div><div class="org-eta">38 min</div><div><span class="org-status-badge st-confirmed">CONFIRMAT</span></div></div>
+        <div class="org-row"><div class="org-name">ProVita Lugoj</div><div class="org-dist">34 km</div><div class="org-cap">Generator > 150kVA × 1</div><div class="org-eta">55 min</div><div><span class="org-status-badge st-confirmed">CONFIRMAT</span></div></div>
+        <div class="org-row"><div class="org-name">Asociația Caraș Verde</div><div class="org-dist">22 km</div><div class="org-cap">ATV-uri × 5</div><div class="org-eta" style="color:var(--yellow)">—</div><div><span class="org-status-badge st-pending">FĂRĂ RĂSPUNS</span></div></div>
+        <div class="org-row"><div class="org-name">ANCAAR Timiș</div><div class="org-dist">41 km</div><div class="org-cap">Autoutilitare cisternă</div><div class="org-eta" style="color:var(--yellow)">—</div><div><span class="org-status-badge st-pending">FĂRĂ RĂSPUNS</span></div></div>
+        <div class="org-row"><div class="org-name">Voluntariat Sibiu</div><div class="org-dist">67 km</div><div class="org-cap">Buldoexcavator × 1</div><div class="org-eta" style="color:var(--red)">—</div><div><span class="org-status-badge st-declined">INDISPONIBIL</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-header">ESCALADARE AUTOMATĂ <span style="color:var(--yellow)">LAYER 0 ACTIV</span></div>
+      <div class="escalade-panel">
+        <div class="countdown-display">
+          <div class="countdown-label">TIMEOUT LAYER 0</div>
+          <div class="countdown-val" id="countdown">04:12</div>
+          <div class="countdown-sub">→ escaladare automată Layer 1</div>
+        </div>
+        <div class="layer-status">
+          <div class="ls-header"><span class="ls-name">Layer 0 · ≤ 30 km</span><span class="ls-state ls-active">ACTIV</span></div>
+          <div class="ls-bar"><div class="ls-fill" style="width:58%;background:var(--green)"></div></div>
+          <div class="ls-stats"><span>7/12 răspunsuri</span><span>58%</span></div>
+        </div>
+        <div class="layer-status">
+          <div class="ls-header"><span class="ls-name">Layer 1 · ≤ 80 km</span><span class="ls-state ls-wait">ÎN AȘTEPTARE</span></div>
+          <div class="ls-bar"><div class="ls-fill" style="width:0%;background:var(--yellow)"></div></div>
+          <div class="ls-stats"><span>6 org. eligibile</span><span>—</span></div>
+        </div>
+        <div class="layer-status">
+          <div class="ls-header"><span class="ls-name">Layer 2 · ≤ 200 km</span><span class="ls-state ls-standby">STANDBY</span></div>
+          <div class="ls-bar"><div class="ls-fill" style="width:0%;background:var(--text3)"></div></div>
+          <div class="ls-stats"><span>11 org. eligibile</span><span>—</span></div>
+        </div>
+        <div class="escalade-btns">
+          <button class="esc-btn esc-btn-now" onclick="escaladeNow()">ESCALADEAZĂ ACUM</button>
+          <button class="esc-btn esc-btn-cancel" onclick="alert('Cerere anulată.')">ANULEAZĂ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-header">ACOPERIRE CAPABILITĂȚI</div>
+      <div class="cap-coverage">
+        <div class="cap-cov-item">
+          <div class="cap-cov-header"><span class="cap-cov-name">Bărci pneumatice</span><span class="cap-cov-val">4 / 6</span></div>
+          <div class="cov-bar"><div class="cov-fill cov-yellow" style="width:67%"></div></div>
+        </div>
+        <div class="cap-cov-item">
+          <div class="cap-cov-header"><span class="cap-cov-name">Motopompe</span><span class="cap-cov-val">6 / 6</span></div>
+          <div class="cov-bar"><div class="cov-fill cov-green" style="width:100%"></div></div>
+        </div>
+        <div class="cap-cov-item">
+          <div class="cap-cov-header"><span class="cap-cov-name">Ambulanțe tip B</span><span class="cap-cov-val">2 / 2</span></div>
+          <div class="cov-bar"><div class="cov-fill cov-green" style="width:100%"></div></div>
+        </div>
+        <div class="cap-cov-item">
+          <div class="cap-cov-header"><span class="cap-cov-name">Autoutilitare cisternă</span><span class="cap-cov-val">0 / 2</span></div>
+          <div class="cov-bar"><div class="cov-fill cov-red" style="width:0%"></div></div>
+        </div>
+        <div class="cap-cov-item">
+          <div class="cap-cov-header"><span class="cap-cov-name">Generator > 150kVA</span><span class="cap-cov-val">1 / 1</span></div>
+          <div class="cov-bar"><div class="cov-fill cov-green" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-header">LOG EVENIMENT</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-time">14:31</div><div class="tl-dot" style="background:var(--red)"></div><div class="tl-text">Cerere #CR-2024-0847 creată — Inundații Banat</div></div>
+        <div class="tl-item"><div class="tl-time">14:31</div><div class="tl-dot" style="background:var(--accent2)"></div><div class="tl-text">12 org. notificate în Layer 0 (≤30km)</div></div>
+        <div class="tl-item"><div class="tl-time">14:33</div><div class="tl-dot" style="background:var(--green)"></div><div class="tl-text">Crucea Roșie Timiș — confirmat (2 ambulanțe)</div></div>
+        <div class="tl-item"><div class="tl-time">14:34</div><div class="tl-dot" style="background:var(--green)"></div><div class="tl-text">SMURD Timiș — confirmat (3 autoutilitare)</div></div>
+        <div class="tl-item"><div class="tl-time">14:35</div><div class="tl-dot" style="background:var(--red)"></div><div class="tl-text">Voluntariat Sibiu — indisponibil</div></div>
+        <div class="tl-item"><div class="tl-time">14:36</div><div class="tl-dot" style="background:var(--green)"></div><div class="tl-text">Lions Club — confirmat (6 motopompe)</div></div>
+        <div class="tl-item"><div class="tl-time">14:37</div><div class="tl-dot" style="background:var(--accent2)"></div><div class="tl-text">Salvaspeo — în drum · ETA 18 min</div></div>
+        <div class="tl-item"><div class="tl-time">14:38</div><div class="tl-dot" style="background:var(--yellow)"></div><div class="tl-text">Alertă: 5 org. fără răspuns în Layer 0</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN: CERERE NOUĂ (POA)
+════════════════════════════════ -->
+<div id="screen-poa" class="screen">
+  <div class="poa-header">
+    <div>
+      <div class="poa-title">CERERE CAPABILITĂȚI — SOCIETATE CIVILĂ</div>
+      <div class="poa-subtitle">CIVITAS · DSU · PUNCT DE OPERAȚIUNI AVANSATE</div>
+    </div>
+    <div class="poa-incident">
+      <div class="poa-incident-label">EVENIMENT ACTIV</div>
+      <div class="poa-incident-type">INUNDAȚII</div>
+      <div class="poa-incident-loc">Timiș · 45.7489, 21.2087</div>
+    </div>
+  </div>
+  <div class="stepper">
+    <div class="step done" id="step1-tab" onclick="goStep(1)">
+      <div class="step-num" id="sn1">✓</div>
+      <div class="step-label">Localizare eveniment</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step active" id="step2-tab" onclick="goStep(2)">
+      <div class="step-num" id="sn2">2</div>
+      <div class="step-label">Selectare capabilități</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step3-tab" onclick="goStep(3)">
+      <div class="step-num" id="sn3">3</div>
+      <div class="step-label">Confirmare și trimitere</div>
+    </div>
+  </div>
+  <div class="poa-content">
+
+    <!-- STEP 1 -->
+    <div id="poa-step1" style="display:none">
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon" style="background:#e8f4f8">📍</div>Localizarea evenimentului</div>
+        <div class="form-body">
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">LATITUDINE</div>
+              <div class="gps-row">
+                <input class="form-input filled" id="lat" value="45.7489" readonly style="flex:1">
+                <button class="gps-btn" onclick="refreshGPS()">↻ GPS</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="form-label">LONGITUDINE</div>
+              <input class="form-input filled" id="lng" value="21.2087" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">TIP EVENIMENT</div>
+              <select class="form-select" id="evType">
+                <option>Inundații</option>
+                <option>Incendiu de vegetație</option>
+                <option>Cutremur de pământ</option>
+                <option>Accident chimic / CBRN</option>
+                <option>Căderi masive de zăpadă</option>
+                <option>Alunecare de teren</option>
+                <option>Accident transport</option>
+                <option>Epidemie</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="form-label">RAZA DE INTERVENȚIE (KM)</div>
+              <div class="radius-row">
+                <input type="range" class="radius-slider" min="5" max="100" value="45" id="radius" oninput="updateRadius(this.value)">
+                <div class="radius-val" id="radiusVal">45 km</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div class="form-label" style="margin-bottom:8px">PREVIZUALIZARE ZONĂ</div>
+            <div class="mini-map">
+              <div class="map-bg"></div>
+              <div class="map-radius-ring" id="radiusRing" style="width:120px;height:120px"></div>
+              <div class="map-pin"><div class="map-pin-dot"></div></div>
+              <div class="org-marker l0" style="top:38%;left:35%"></div>
+              <div class="org-marker l0" style="top:60%;left:58%"></div>
+              <div class="org-marker l0" style="top:45%;left:65%"></div>
+              <div class="org-marker l1" style="top:20%;left:45%"></div>
+              <div class="org-marker l1" style="top:75%;left:25%"></div>
+              <div class="org-marker l1" style="top:70%;left:72%"></div>
+              <div class="map-label">● Layer 0: 7 org. ● Layer 1: 6 org.</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-label">DESCRIERE SITUAȚIE (OPȚIONAL)</div>
+            <input class="form-input" placeholder="Ex: Zone inundate în Satchinez și Variaș, acces rutier blocat pe DN6..." style="width:100%">
+          </div>
+        </div>
+      </div>
+      <div class="step-footer">
+        <div></div>
+        <button class="btn-next" onclick="goStep(2)">Continuă →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="poa-step2">
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon" style="background:#e8f4f8">⚡</div>Pachete rapide de urgență</div>
+        <div class="form-body" style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="selectPackage(this,'Inundații')" style="padding:8px 16px;border:1.5px solid #dee2e6;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#e8f4f8;color:#1a1a2e;transition:all 0.15s">💧 Inundații</button>
+          <button onclick="selectPackage(this,'Incendiu')" style="padding:8px 16px;border:1.5px solid #dee2e6;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s">🔥 Incendiu vegetație</button>
+          <button onclick="selectPackage(this,'Cutremur')" style="padding:8px 16px;border:1.5px solid #dee2e6;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s">🏔 Cutremur</button>
+          <button onclick="selectPackage(this,'CBRN')" style="padding:8px 16px;border:1.5px solid #dee2e6;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s">☣ CBRN</button>
+          <button onclick="selectPackage(this,'Medical')" style="padding:8px 16px;border:1.5px solid #dee2e6;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s">🏥 Urgență medicală</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon" style="background:#fff3cd">🔍</div>Selectare manuală capabilități</div>
+        <div class="form-body">
+          <div class="cap-search">
+            <input class="cap-search-input" placeholder="Caută în cele 555 tipuri de capabilități RNC...">
+          </div>
+          <div class="cap-categories">
+            <div class="cap-cat active" onclick="setCat(this)">Toate</div>
+            <div class="cap-cat" onclick="setCat(this)">Ambarcațiuni</div>
+            <div class="cap-cat" onclick="setCat(this)">Pompe</div>
+            <div class="cap-cat" onclick="setCat(this)">Medical</div>
+            <div class="cap-cat" onclick="setCat(this)">Utilaje grele</div>
+            <div class="cap-cat" onclick="setCat(this)">Transport</div>
+            <div class="cap-cat" onclick="setCat(this)">Energie</div>
+            <div class="cap-cat" onclick="setCat(this)">Adăpost</div>
+          </div>
+          <div class="cap-grid">
+            <div class="cap-card selected" onclick="toggleCap(this)">
+              <div class="cap-icon">🚤</div>
+              <div><div class="cap-name">Bărci pneumatice cu motor</div><div class="cap-sub">Ambarcațiuni tip bărci pneumatice cu motopropulsor</div></div>
+              <div class="cap-check">✓</div>
+            </div>
+            <div class="cap-card selected" onclick="toggleCap(this)">
+              <div class="cap-icon">🚿</div>
+              <div><div class="cap-name">Motopompe apă uz general</div><div class="cap-sub">Motopompe apă de uz general</div></div>
+              <div class="cap-check">✓</div>
+            </div>
+            <div class="cap-card selected" onclick="toggleCap(this)">
+              <div class="cap-icon">🚑</div>
+              <div><div class="cap-name">Ambulanță tip B</div><div class="cap-sub">Echipate complet pentru urgențe</div></div>
+              <div class="cap-check">✓</div>
+            </div>
+            <div class="cap-card" onclick="toggleCap(this)">
+              <div class="cap-icon">🏕</div>
+              <div><div class="cap-name">Tabără mobilă</div><div class="cap-sub">Adăpost temporar evacuați</div></div>
+              <div class="cap-check"></div>
+            </div>
+            <div class="cap-card selected" onclick="toggleCap(this)">
+              <div class="cap-icon">⚡</div>
+              <div><div class="cap-name">Generator > 150 kVA</div><div class="cap-sub">Grupuri electrogene mobile</div></div>
+              <div class="cap-check">✓</div>
+            </div>
+            <div class="cap-card" onclick="toggleCap(this)">
+              <div class="cap-icon">🚜</div>
+              <div><div class="cap-name">Excavator cu cupă pe roți</div><div class="cap-sub">Utilaj greu pentru deblocare</div></div>
+              <div class="cap-check"></div>
+            </div>
+            <div class="cap-card selected" onclick="toggleCap(this)">
+              <div class="cap-icon">🛻</div>
+              <div><div class="cap-name">Autoutilitare cisternă apă</div><div class="cap-sub">&gt; 3.5t, cisternă transport apă</div></div>
+              <div class="cap-check">✓</div>
+            </div>
+            <div class="cap-card" onclick="toggleCap(this)">
+              <div class="cap-icon">🌊</div>
+              <div><div class="cap-name">Diguri mobile anti-inundații</div><div class="cap-sub">Bariere temporare gonflabile</div></div>
+              <div class="cap-check"></div>
+            </div>
+          </div>
+
+          <div class="selected-caps" id="selectedCaps">
+            <div style="font-size:11px;font-weight:600;color:#495057;margin-bottom:10px;letter-spacing:0.3px">CAPABILITĂȚI SELECTATE</div>
+            <div class="selected-cap-item">
+              <div class="cap-icon" style="font-size:16px">🚤</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600">Bărci pneumatice cu motor</div><div style="font-size:10px;color:#6c757d">Imediat</div></div>
+              <div class="cap-qty">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <div class="qty-val">6</div>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+            <div class="selected-cap-item">
+              <div class="cap-icon" style="font-size:16px">🚿</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600">Motopompe apă uz general</div><div style="font-size:10px;color:#6c757d">Imediat</div></div>
+              <div class="cap-qty">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <div class="qty-val">6</div>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+            <div class="selected-cap-item">
+              <div class="cap-icon" style="font-size:16px">🚑</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600">Ambulanță tip B</div><span class="urgency-sel urgency-immediate">IMEDIAT</span></div>
+              <div class="cap-qty">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <div class="qty-val">2</div>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+            <div class="selected-cap-item">
+              <div class="cap-icon" style="font-size:16px">⚡</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600">Generator > 150 kVA</div><span class="urgency-sel urgency-1h">ÎN 1H</span></div>
+              <div class="cap-qty">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <div class="qty-val">1</div>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+            <div class="selected-cap-item">
+              <div class="cap-icon" style="font-size:16px">🛻</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600">Autoutilitare cisternă apă</div><div style="font-size:10px;color:#6c757d">Imediat</div></div>
+              <div class="cap-qty">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <div class="qty-val">2</div>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-footer">
+        <button class="btn-back" onclick="goStep(1)">← Înapoi</button>
+        <button class="btn-next" onclick="goStep(3)">Continuă →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="poa-step3" style="display:none">
+      <div class="confirm-summary">
+        <div class="confirm-title">REZUMAT CERERE</div>
+        <div class="confirm-row"><div class="confirm-key">Eveniment</div><div class="confirm-val">INUNDAȚII</div></div>
+        <div class="confirm-row"><div class="confirm-key">Localizare</div><div class="confirm-val">45.7489 · 21.2087 (Timiș)</div></div>
+        <div class="confirm-row"><div class="confirm-key">Capabilități solicitate</div><div class="confirm-val">5 tipuri · 17 unități</div></div>
+        <div class="confirm-row"><div class="confirm-key">Org. eligibile Layer 0</div><div class="confirm-val">7 organizații (≤30km)</div></div>
+        <div class="confirm-row"><div class="confirm-key">Org. eligibile Layer 1</div><div class="confirm-val">6 organizații (≤80km)</div></div>
+        <div class="confirm-row"><div class="confirm-key">Org. eligibile Layer 2</div><div class="confirm-val">11 organizații (≤200km)</div></div>
+      </div>
+
+      <div style="margin-bottom:8px;font-size:11px;font-weight:600;color:#495057;letter-spacing:0.3px">CONFIGURARE ESCALADARE AUTOMATĂ</div>
+      <div class="layers-preview">
+        <div class="layer-card l0">
+          <div class="layer-num">LAYER 0</div>
+          <div class="layer-count l0">7</div>
+          <div class="layer-desc">organizații · ≤30km</div>
+          <div class="layer-timeout">
+            <span style="font-size:10px;color:#495057">Timeout:</span>
+            <input class="timeout-input" value="15" id="t0"> min
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 1</div>
+          <div class="layer-count l1">6</div>
+          <div class="layer-desc">organizații · ≤80km</div>
+          <div class="layer-timeout">
+            <span style="font-size:10px;color:#495057">Timeout:</span>
+            <input class="timeout-input" value="15" id="t1"> min
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 2</div>
+          <div class="layer-count l2">11</div>
+          <div class="layer-desc">organizații · ≤200km</div>
+          <div class="layer-timeout">
+            <span style="font-size:10px;color:#495057">Timeout:</span>
+            <input class="timeout-input" value="20" id="t2"> min
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:600;color:#495057;margin-bottom:6px;letter-spacing:0.3px">MESAJ CONTEXT PENTRU ORGANIZAȚII (OPȚIONAL)</div>
+        <textarea style="width:100%;border:1.5px solid #dee2e6;border-radius:6px;padding:10px 12px;font-size:12px;resize:none;font-family:var(--sans);outline:none;height:60px" placeholder="Ex: Zone inundate DN6 km 45-67. Acces prin Satchinez. Punct de întâlnire: Primăria Variaș."></textarea>
+      </div>
+
+      <button class="submit-btn" onclick="submitCerere()">
+        ⚡ TRIMITE CEREREA — NOTIFICĂ 7 ORGANIZAȚII
+      </button>
+      <div class="submit-note">Tap dublu pentru confirmare · Notificare simultană push + SMS + email</div>
+
+      <div class="step-footer" style="margin-top:16px">
+        <button class="btn-back" onclick="goStep(2)">← Înapoi</button>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN: CERERE ACTIVĂ
+════════════════════════════════ -->
+<div id="screen-active" class="screen">
+  <div class="active-main" style="padding:24px;background:var(--bg);color:var(--text)">
+    <div class="active-header">
+      <div class="active-badge">CERERE ACTIVĂ</div>
+      <div>
+        <div class="active-title">#CR-2024-0847 — Inundații Banat</div>
+        <div class="active-sub" style="color:var(--text2)">Trimisă la 14:31 · Timiș · 45.7489, 21.2087</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button onclick="escaladeNow()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.5px">ESCALADEAZĂ ACUM</button>
+        <button onclick="showScreen('dash')" style="padding:8px 16px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:4px;font-size:11px;cursor:pointer">→ DASHBOARD</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div class="kpi"><div class="kpi-label">Notificate</div><div class="kpi-val blue">12</div><div class="kpi-sub">Layer 0</div></div>
+      <div class="kpi"><div class="kpi-label">Confirmate</div><div class="kpi-val green">7</div><div class="kpi-sub">58%</div></div>
+      <div class="kpi"><div class="kpi-label">Fără răspuns</div><div class="kpi-val yellow">3</div><div class="kpi-sub">timeout în 4:12</div></div>
+      <div class="kpi"><div class="kpi-label">Acoperire</div><div class="kpi-val green">74%</div><div class="kpi-sub">din cerere</div></div>
+    </div>
+
+    <!-- Org cards live -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div style="background:var(--bg2);border:1px solid rgba(63,185,80,0.4);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">Crucea Roșie Timiș</div>
+          <span class="org-status-badge st-arrived">ACTIV TEREN</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">Ambulanță tip B × 2 · 12 km</div>
+        <div style="font-size:10px;color:var(--green)">● SOSIT 14:49</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(63,185,80,0.4);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">SMURD Timiș</div>
+          <span class="org-status-badge st-arrived">ACTIV TEREN</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">Autoutilitare × 3 · 8 km</div>
+        <div style="font-size:10px;color:var(--green)">● SOSIT 14:52</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(121,192,255,0.4);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">Salvaspeo Romania</div>
+          <span class="org-status-badge st-transit">ÎN DRUM</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">Bărci pneumatice × 4 · 19 km</div>
+        <div style="font-size:10px;color:var(--accent2)">↦ ETA 18 min · 0721 XXX XXX</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(63,185,80,0.3);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">Lions Club Romania</div>
+          <span class="org-status-badge st-confirmed">CONFIRMAT</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">Motopompe × 6 · 15 km</div>
+        <div style="font-size:10px;color:var(--text2)">Pleacă la 15:00 · ETA 45 min</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(227,179,65,0.3);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">Asociația Caraș Verde</div>
+          <span class="org-status-badge st-pending">FĂRĂ RĂSPUNS</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">ATV-uri × 5 · 22 km</div>
+        <div style="font-size:10px;color:var(--yellow)">⏱ Notificat la 14:31 · SMS trimis</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(248,81,73,0.3);border-radius:6px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">Voluntariat Sibiu</div>
+          <span class="org-status-badge st-declined">INDISPONIBIL</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)">Buldoexcavator × 1 · 67 km</div>
+        <div style="font-size:10px;color:var(--red)">Motiv: Angajat eveniment Sibiu</div>
+      </div>
+    </div>
+  </div>
+  <div class="active-sidebar" style="background:var(--bg2)">
+    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:var(--text2);margin-bottom:12px">ESCALADARE</div>
+    <div class="countdown-display">
+      <div class="countdown-label">TIMEOUT LAYER 0</div>
+      <div class="countdown-val" id="countdown2">04:12</div>
+      <div class="countdown-sub">→ Layer 1 se activează automat</div>
+    </div>
+    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:var(--text2);margin-top:16px;margin-bottom:10px">ACOPERIRE CAPABILITĂȚI</div>
+    <div class="cap-cov-item" style="margin-bottom:10px">
+      <div class="cap-cov-header"><span style="font-size:11px;font-weight:500;color:var(--text)">Bărci pneumatice</span><span style="font-family:var(--mono);font-size:10px;color:var(--text2)">4/6</span></div>
+      <div class="cov-bar"><div class="cov-fill cov-yellow" style="width:67%"></div></div>
+    </div>
+    <div class="cap-cov-item" style="margin-bottom:10px">
+      <div class="cap-cov-header"><span style="font-size:11px;font-weight:500;color:var(--text)">Motopompe</span><span style="font-family:var(--mono);font-size:10px;color:var(--text2)">6/6</span></div>
+      <div class="cov-bar"><div class="cov-fill cov-green" style="width:100%"></div></div>
+    </div>
+    <div class="cap-cov-item" style="margin-bottom:10px">
+      <div class="cap-cov-header"><span style="font-size:11px;font-weight:500;color:var(--text)">Cisternă apă</span><span style="font-family:var(--mono);font-size:10px;color:var(--text2)">0/2</span></div>
+      <div class="cov-bar"><div class="cov-fill cov-red" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 2;
+let countdownSec = 252;
+let countdownInterval;
+
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('screen-' + s);
+  if (el) el.classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  if (s === 'dash') tabs[0].classList.add('active');
+  else if (s === 'poa') tabs[1].classList.add('active');
+  else if (s === 'active') tabs[2].classList.add('active');
+}
+
+function goStep(n) {
+  document.querySelectorAll('[id^=poa-step]').forEach(el => el.style.display = 'none');
+  const el = document.getElementById('poa-step' + n);
+  if (el) el.style.display = 'block';
+  document.querySelectorAll('.step').forEach((el, i) => {
+    el.classList.remove('active', 'done');
+    if (i + 1 < n) el.classList.add('done');
+    else if (i + 1 === n) el.classList.add('active');
+  });
+  document.querySelectorAll('[id^=sn]').forEach((el, i) => {
+    if (i + 1 < n) el.textContent = '✓';
+    else el.textContent = i + 1;
+  });
+  currentStep = n;
+}
+
+function updateRadius(v) {
+  document.getElementById('radiusVal').textContent = v + ' km';
+  const size = 40 + (v / 100) * 140;
+  document.getElementById('radiusRing').style.width = size + 'px';
+  document.getElementById('radiusRing').style.height = size + 'px';
+}
+
+function refreshGPS() {
+  document.getElementById('lat').value = '45.' + (7000 + Math.floor(Math.random()*500));
+  document.getElementById('lng').value = '21.' + (2000 + Math.floor(Math.random()*200));
+}
+
+function toggleCap(card) {
+  card.classList.toggle('selected');
+  const check = card.querySelector('.cap-check');
+  check.textContent = card.classList.contains('selected') ? '✓' : '';
+}
+
+function setCat(btn) {
+  document.querySelectorAll('.cap-cat').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function changeQty(btn, delta) {
+  const val = btn.parentElement.querySelector('.qty-val');
+  let n = parseInt(val.textContent) + delta;
+  if (n < 1) n = 1;
+  val.textContent = n;
+}
+
+function selectPackage(btn, pkg) {
+  document.querySelectorAll('.form-body button').forEach(b => {
+    b.style.background = '';
+    b.style.borderColor = '#dee2e6';
+    b.style.color = '#1a1a2e';
+  });
+  btn.style.background = '#1a1a2e';
+  btn.style.borderColor = '#1a1a2e';
+  btn.style.color = 'white';
+}
+
+function setScope(btn, scope) {
+  document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+let submitCount = 0;
+function submitCerere() {
+  submitCount++;
+  if (submitCount === 1) {
+    document.querySelector('.submit-btn').textContent = '⚡ CONFIRMĂ — TAP ÎNCĂ O DATĂ';
+    document.querySelector('.submit-btn').style.background = '#e3b341';
+    return;
+  }
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+  showScreen('active');
+  startCountdown();
+  submitCount = 0;
+}
+
+function startCountdown() {
+  clearInterval(countdownInterval);
+  countdownSec = 252;
+  countdownInterval = setInterval(() => {
+    countdownSec--;
+    if (countdownSec <= 0) {
+      clearInterval(countdownInterval);
+      escaladeNow();
+      return;
+    }
+    const m = Math.floor(countdownSec / 60).toString().padStart(2,'0');
+    const s = (countdownSec % 60).toString().padStart(2,'0');
+    const val = m + ':' + s;
+    const c1 = document.getElementById('countdown');
+    const c2 = document.getElementById('countdown2');
+    if (c1) c1.textContent = val;
+    if (c2) c2.textContent = val;
+    const color = countdownSec < 60 ? 'var(--red)' : countdownSec < 120 ? 'var(--yellow)' : 'var(--yellow)';
+    if (c1) c1.style.color = color;
+    if (c2) c2.style.color = color;
+  }, 1000);
+}
+
+function escaladeNow() {
+  clearInterval(countdownInterval);
+  const toast = document.getElementById('toast');
+  toast.style.borderColor = 'var(--yellow)';
+  toast.style.color = 'var(--yellow)';
+  toast.textContent = '⚡ ESCALADARE LAYER 1 — 6 organizații suplimentare notificate';
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); toast.style.borderColor=''; toast.style.color=''; toast.textContent='✓ Cerere trimisă — 7 organizații notificate în Layer 0'; }, 4000);
+  const c1 = document.getElementById('countdown');
+  const c2 = document.getElementById('countdown2');
+  if (c1) { c1.textContent = '15:00'; c1.style.color = 'var(--yellow)'; }
+  if (c2) { c2.textContent = '15:00'; c2.style.color = 'var(--yellow)'; }
+}
+
+// Start countdown on load for demo
+startCountdown();
+</script>
+</body>
+</html>
